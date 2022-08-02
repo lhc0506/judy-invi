@@ -8,6 +8,29 @@ import TextField from "../TextField";
 import {css} from '@emotion/react';
 import {useNavigate} from "react-router-dom";
 
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: "farewell-judy.firebaseapp.com",
+  projectId: "farewell-judy",
+  storageBucket: "farewell-judy.appspot.com",
+  messagingSenderId: "670214980728",
+  appId: "1:670214980728:web:7139bfea5587dae72d198d",
+  measurementId: "G-J0VGPDBSDZ"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 export default function Invitaion() {
   const [firstName, onChangeFirstName] = useInput('');
   const [lastName, onChangeLastName] = useInput('');
@@ -25,11 +48,23 @@ export default function Invitaion() {
   const submitHandler = (e) => {
     e.preventDefault();
     postData();
+
     localStorage.setItem("judy","true")
     navgiate("/thanks");
   };
 
   const isSubmitted = localStorage.getItem("judy");
+
+  async function postData() {
+    try {
+      const docRef = await addDoc(collection(db, "users"), {
+        firstName, lastName, number, time, invitation, message
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  };
 
   useEffect(() => {
     if (isSubmitted) {
@@ -37,78 +72,78 @@ export default function Invitaion() {
     }
   }, [isSubmitted, navgiate]);
 
-  async function postData() {
-    try {
-      const result = await axios.post(
-        "https://cors-anywhere.herokuapp.com/https://api.notion.com/v1/pages/",
-        {
-          "parent": { "database_id": notionDatabaseKey},
-          "properties": {
-            "이름": {
-              "title": [
-                {
-                  "text": {
-                    "content": lastName + firstName
-                  }
-                }
-              ]
-            },
-            "Number": {
-              "rich_text": [
-                {
-                  "type": "text",
-                  "text": {
-                    "content": number
-                  }
-                }
-              ]
-            },
-            "Time": {
-              "rich_text": [
-                {
-                  "type": "text",
-                  "text": {
-                    "content": time
-                  }
-                }
-              ]
-            },
-            "Invitation": {
-              "rich_text": [
-                {
-                  "type": "text",
-                  "text": {
-                    "content": invitation
-                  }
-                }
-              ]
-            },
-            "Message": {
-              "rich_text": [
-                {
-                  "type": "text",
-                  "text": {
-                    "content": message
-                  }
-                }
-              ]
-            },
-          }
-        },
-        {
-          headers: {
-            "Authorization": `Bearer ${notionKey}`,
-            "Notion-Version": "2021-08-16"
-          }
-        }
-      );
-      console.log(result)
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw new Error();
-    }
-  };
+  // async function postData() {
+  //   try {
+  //     const result = await axios.post(
+  //       "https://cors-anywhere.herokuapp.com/https://api.notion.com/v1/pages/",
+  //       {
+  //         "parent": { "database_id": notionDatabaseKey},
+  //         "properties": {
+  //           "이름": {
+  //             "title": [
+  //               {
+  //                 "text": {
+  //                   "content": lastName + firstName
+  //                 }
+  //               }
+  //             ]
+  //           },
+  //           "Number": {
+  //             "rich_text": [
+  //               {
+  //                 "type": "text",
+  //                 "text": {
+  //                   "content": number
+  //                 }
+  //               }
+  //             ]
+  //           },
+  //           "Time": {
+  //             "rich_text": [
+  //               {
+  //                 "type": "text",
+  //                 "text": {
+  //                   "content": time
+  //                 }
+  //               }
+  //             ]
+  //           },
+  //           "Invitation": {
+  //             "rich_text": [
+  //               {
+  //                 "type": "text",
+  //                 "text": {
+  //                   "content": invitation
+  //                 }
+  //               }
+  //             ]
+  //           },
+  //           "Message": {
+  //             "rich_text": [
+  //               {
+  //                 "type": "text",
+  //                 "text": {
+  //                   "content": message
+  //                 }
+  //               }
+  //             ]
+  //           },
+  //         }
+  //       },
+  //       {
+  //         headers: {
+  //           "Authorization": `Bearer ${notionKey}`,
+  //           "Notion-Version": "2021-08-16"
+  //         }
+  //       }
+  //     );
+  //     console.log(result)
+  //     return result;
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new Error();
+  //   }
+  // };
 
   return (
     <div
